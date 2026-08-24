@@ -1,77 +1,63 @@
 📚 Web Scraping & Data Mining with Python
-Project Overview
+Overview
 
-This project demonstrates an end-to-end web scraping and data mining workflow using Python.
+This project demonstrates a web scraping and data mining workflow using Python.
 
-The scraper collects product information from Books to Scrape, a sandbox website specifically designed for web scraping practice. It extracts information from both catalogue pages and individual product pages, cleans and transforms the collected data using Pandas, and exports the final dataset to CSV/Excel for further analysis.
+The scraper collects book information from Books to Scrape, a sandbox website designed specifically for web scraping practice. It extracts information from catalogue pages and individual product pages, cleans the collected data, and exports the results into structured datasets for analysis.
 
-This project is part of my exploration of web scraping, data collection, ETL, and analytics automation using Python.
+The project serves as a foundation for applying web data collection techniques to future logistics, supply chain, and market intelligence projects.
 
-🎯 Project Objectives
-Understand HTML webpage structures
-Send HTTP requests using Python
-Parse HTML using BeautifulSoup
-Extract repeating product information
-Automate data collection across multiple pages
-Follow product URLs to collect detailed information
-Clean and transform scraped data using Pandas
-Convert raw text into analysis-ready data types
-Export structured datasets to CSV and Excel
-Build a foundation for future web data mining projects
-🛠️ Technologies Used
+🛠️ Technologies
 Python
-Requests – retrieving webpage HTML
-BeautifulSoup – parsing and extracting HTML data
-Pandas – data cleaning, transformation, and analysis
-Regular Expressions (Regex) – extracting inventory quantities from text
-Jupyter Notebook – development and documentation
-OpenPyXL – Excel output
-🔄 Data Pipeline
+Requests
+BeautifulSoup
+Pandas
+Regular Expressions (Regex)
+Jupyter Notebook
+OpenPyXL
+🔄 Workflow
 Catalogue Pages
       ↓
-HTTP Requests
+HTTP Request
       ↓
 BeautifulSoup
       ↓
-Extract Basic Product Data
+Extract Product Information
       ↓
-Extract Product URLs
+Pagination
+      ↓
+Product URLs
       ↓
 Individual Product Pages
       ↓
-Extract Detailed Product Data
+Detailed Data Extraction
       ↓
-Data Cleaning & Transformation
+Data Cleaning
       ↓
 Pandas DataFrame
       ↓
 CSV / Excel
 📊 Data Collected
 
-The scraper currently extracts information from both catalogue and individual product pages.
+The scraper currently collects:
 
 Field	Description
 title	Book title
-price	Listed book price
-rating	Rating converted from text to 1–5
-availability	Stock availability
-product_url	URL of the individual product page
+price	Book price
+rating	Rating from 1–5
+availability	Stock status
+product_url	Individual product page
 category	Book category
 UPC	Unique Product Code
 tax	Tax amount
 reviews	Number of reviews
 quantity	Available inventory quantity
-
-This produces a structured dataset similar to:
-
-Title	Price	Rating	Category	Tax	Reviews	Quantity
-A Light in the Attic	51.77	3	Poetry	0.00	0	22
 🕷️ Scraping Process
-1. Catalogue Page Extraction
+1. Catalogue Pages
 
-The scraper first identifies repeating product containers on each catalogue page.
+The scraper first sends an HTTP request to each catalogue page.
 
-From these elements, it extracts:
+BeautifulSoup is used to identify the repeating product containers and extract:
 
 Title
 Price
@@ -80,47 +66,42 @@ Availability
 Product URL
 2. Pagination
 
-The scraper dynamically generates catalogue URLs rather than manually visiting each page.
+Rather than manually visiting each page, Python dynamically generates the page URLs.
 
 page-1.html
 page-2.html
 page-3.html
 ...
 
-This allows the same extraction logic to be applied across multiple catalogue pages.
+This allows the same scraping logic to be applied across multiple pages.
 
-3. Product Page Extraction
+3. Individual Product Pages
 
-Each extracted product URL is then used to access the corresponding individual book page.
+The scraper follows each extracted product URL to collect additional information.
 
-Additional information is collected from the product information table and breadcrumb navigation, including:
+Catalogue
+    │
+    ├── Book A → Product Page A
+    ├── Book B → Product Page B
+    ├── Book C → Product Page C
+    └── ...
+
+The individual pages provide:
 
 Category
 UPC
 Tax
 Number of reviews
 Inventory quantity
-
-This introduces a second level of scraping:
-
-Catalogue
-   │
-   ├── Book A ──→ Product Page A
-   ├── Book B ──→ Product Page B
-   ├── Book C ──→ Product Page C
-   └── ...
 🧹 Data Cleaning
-
-Raw web data requires transformation before it can be analysed.
-
 Price
 
-Currency symbols are removed and prices are converted from strings to numeric values.
+Prices are converted from text into numeric values.
 
-"£51.77" → 51.77
+£51.77 → 51.77
 Rating
 
-Ratings stored in HTML classes are mapped to numeric values.
+Ratings stored as HTML classes are converted into numerical values.
 
 One   → 1
 Two   → 2
@@ -129,16 +110,16 @@ Four  → 4
 Five  → 5
 Inventory Quantity
 
-Availability is originally stored as text:
+The website provides availability as text:
 
 In stock (22 available)
 
-Regular expressions are used to extract the numerical quantity:
+Regex is used to extract the quantity:
 
 22
-Tax and Reviews
+Other Fields
 
-Tax values are converted to numeric values and review counts are converted to integers to make the fields suitable for analysis.
+Tax values are converted to numeric values and review counts are converted to integers so they can be used directly for analysis.
 
 📁 Project Structure
 web-scraping-data-mining/
@@ -157,120 +138,91 @@ web-scraping-data-mining/
 └── .gitignore
 ✅ Current Progress
 
-Completed:
+Send HTTP requests with Python
 
-HTTP requests
+Parse HTML with BeautifulSoup
 
-HTML parsing with BeautifulSoup
+Extract product information
 
-Basic product extraction
+Handle multiple catalogue pages
 
-Multi-page pagination
+Clean price data
 
-Price cleaning
+Convert ratings to numerical values
 
-Rating transformation
+Build Pandas DataFrames
 
-Pandas DataFrame creation
+Export data to CSV and Excel
 
-CSV/Excel export
+Extract individual product URLs
 
-Product URL extraction
+Scrape individual product pages
 
-Individual product page scraping
+Extract categories and UPCs
 
-Category extraction
+Extract tax and review information
 
-UPC extraction
-
-Tax extraction
-
-Review count extraction
-
-Inventory quantity extraction
+Extract inventory quantities
 
 🚧 Next Steps
 
-Scale scraper to the complete 1,000-book catalogue
+Scale scraper to all 1,000 books
 
-Add HTTP status validation
+Add HTTP status checking
 
-Add timeout handling
+Add timeout and exception handling
 
-Add exception handling for failed requests
-
-Add request delays for responsible scraping
+Add request delays
 
 Add progress tracking
 
-Detect missing or unexpected values
+Validate missing values and duplicates
 
-Remove and check duplicate records
+Perform exploratory data analysis
 
-Perform exploratory data analysis (EDA)
+Create data visualizations
 
-Create visualizations
-
-Store collected data in SQL
+Store scraped data in SQL
 
 Refactor scraper into reusable functions
 
 💡 Skills Demonstrated
 
-This project demonstrates practical experience with:
+This project demonstrates practical experience in:
 
-Web Data Collection
-
-HTTP requests
+Web scraping
 HTML parsing
-CSS/HTML element identification
 Pagination
 Nested page extraction
-
-Python
-
-Loops
-Lists and dictionaries
-String manipulation
+Python loops and data structures
 Regular expressions
-Error-aware data processing
-
-Data Engineering
-
-Data extraction
 Data cleaning
 Data type conversion
-Structured dataset creation
-CSV/Excel output
+Pandas
+CSV and Excel output
 Basic ETL pipeline development
-
-Data Analytics
-
-Pandas DataFrames
-Data validation
-Preparing web data for downstream analysis
 ⚠️ Responsible Web Scraping
 
 Books to Scrape is a sandbox website specifically designed for web scraping practice.
 
-For real-world websites, automated data collection should only be performed where permitted and should take into consideration the website's terms of service, robots.txt rules, API availability, rate limits, copyright, privacy, and applicable laws.
+For real-world projects, automated data collection should consider website terms of service, robots.txt rules, API availability, rate limits, copyright, privacy, and applicable laws.
 
-Where an official API or permitted data export is available, it may be preferable to direct HTML scraping.
+Official APIs or permitted data exports should be used where appropriate.
 
 🚀 Future Direction
 
-The techniques developed in this project can eventually be extended to more complex and permitted data collection use cases, particularly in logistics and supply chain analytics.
+The techniques developed in this project can eventually be applied to more complex data collection and analytics use cases, particularly in logistics and supply chain analytics.
 
-Potential future applications include analysing public data relating to:
+Potential applications include:
 
-Shipping schedules
-Transit times
-Vessel and voyage information
-Trade flows
-Freight market information
-Supply chain performance
+Shipping schedule analysis
+Transit-time comparison
+Vessel and voyage data
+Trade-flow analysis
+Freight market intelligence
+Supply-chain performance monitoring
 
-The longer-term objective is to build end-to-end pipelines that combine:
+The longer-term goal is to develop end-to-end pipelines:
 
 Web / API Data
       ↓
