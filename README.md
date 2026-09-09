@@ -1,239 +1,276 @@
-📚 Web Scraping & Data Mining with Python
+📚 Web Scraping & NLP Book Recommender
+
+An end-to-end Python project that collects book data from a web scraping sandbox, transforms it into structured datasets, and builds a content-based recommendation system using Natural Language Processing (NLP).
+
 Overview
 
-This project demonstrates a web scraping and data mining workflow using Python.
+This project demonstrates a practical workflow from web data collection to machine learning. Book information is extracted from Books to Scrape, a sandbox website designed for scraping practice.
 
-The scraper collects book information from Books to Scrape, a sandbox website designed specifically for web scraping practice. It extracts information from catalogue pages and individual product pages, cleans the collected data, and exports the results into structured datasets for analysis.
+The project currently contains two stages:
 
-The project serves as a foundation for applying web data collection techniques to future logistics, supply chain, and market intelligence projects.
+Web Scraping & Data Mining: Collect catalogue and product-level information, clean the data, and export it to CSV and Excel.
+NLP Book Recommender: Transform book text using TF-IDF and recommend similar books using cosine similarity.
+
+The current dataset contains 60 books. The next development stage is to scale the scraper to the full 1,000-book catalogue and evaluate how a larger candidate pool improves recommendation quality.
 
 🛠️ Technologies
-Python
-Requests
-BeautifulSoup
-Pandas
-Regular Expressions (Regex)
-Jupyter Notebook
-OpenPyXL
-🔄 Workflow
-Catalogue Pages
-      ↓
-HTTP Request
-      ↓
-BeautifulSoup
-      ↓
-Extract Product Information
-      ↓
-Pagination
-      ↓
-Product URLs
-      ↓
+Technology	Purpose
+Python	Core programming language
+Requests	HTTP requests
+BeautifulSoup	HTML parsing and data extraction
+Pandas	Data cleaning and DataFrame operations
+Regular Expressions	Extracting inventory quantities
+Scikit-learn	TF-IDF and cosine similarity
+Jupyter Notebook	Development and experimentation
+OpenPyXL	Excel export
+🔄 Project Workflow
+Books to Scrape
+       ↓
+Catalogue Page Scraping
+       ↓
+Product URL Extraction
+       ↓
 Individual Product Pages
-      ↓
-Detailed Data Extraction
-      ↓
-Data Cleaning
-      ↓
-Pandas DataFrame
-      ↓
-CSV / Excel
+       ↓
+Detailed Data & Descriptions
+       ↓
+Data Cleaning and Validation
+       ↓
+CSV / Excel Dataset
+       ↓
+Text Preprocessing
+       ↓
+TF-IDF Vectorization
+       ↓
+Cosine Similarity
+       ↓
+Top-N Book Recommendations
 📊 Data Collected
 
-The scraper currently collects:
+The detailed dataset contains the following fields:
 
 Field	Description
 title	Book title
 price	Book price
-rating	Rating from 1–5
+rating	Rating converted to a numeric value from 1–5
 availability	Stock status
-product_url	Individual product page
+product_url	Individual product page URL
 category	Book category
 UPC	Unique Product Code
 tax	Tax amount
 reviews	Number of reviews
 quantity	Available inventory quantity
-🕷️ Scraping Process
-1. Catalogue Pages
+description	Product description used for NLP
 
-The scraper first sends an HTTP request to each catalogue page.
+Dataset note: Books to Scrape contains fictional catalogue data. Prices and ratings are not real-world market or quality indicators, so they are not treated as reliable popularity or quality signals.
 
-BeautifulSoup is used to identify the repeating product containers and extract:
+🕷️ Web Scraping
+Catalogue Extraction
 
-Title
-Price
-Rating
-Availability
-Product URL
-2. Pagination
+The scraper sends HTTP requests to catalogue pages and uses BeautifulSoup to identify repeating product containers. It extracts titles, prices, ratings, availability, and product URLs.
 
-Rather than manually visiting each page, Python dynamically generates the page URLs.
+Pagination
+
+Catalogue URLs are generated dynamically using Python loops:
 
 page-1.html
 page-2.html
 page-3.html
 ...
 
-This allows the same scraping logic to be applied across multiple pages.
+This allows the same extraction logic to be applied across multiple pages without manually opening each one.
 
-3. Individual Product Pages
+Individual Product Pages
 
-The scraper follows each extracted product URL to collect additional information.
+Each product URL is visited to collect additional information from the product information table and description section.
 
 Catalogue
-    │
-    ├── Book A → Product Page A
-    ├── Book B → Product Page B
-    ├── Book C → Product Page C
-    └── ...
+    ├── Book A → Product details + description
+    ├── Book B → Product details + description
+    └── Book C → Product details + description
 
-The individual pages provide:
+The detailed extraction includes category, UPC, tax, reviews, inventory quantity, and product description.
 
-Category
-UPC
-Tax
-Number of reviews
-Inventory quantity
 🧹 Data Cleaning
-Price
 
-Prices are converted from text into numeric values.
+Raw website values are converted into analysis-ready formats.
+
+Price conversion
 
 £51.77 → 51.77
-Rating
 
-Ratings stored as HTML classes are converted into numerical values.
+Rating conversion
 
 One   → 1
 Two   → 2
 Three → 3
 Four  → 4
 Five  → 5
-Inventory Quantity
 
-The website provides availability as text:
+Inventory quantity extraction
 
-In stock (22 available)
+In stock (22 available) → 22
 
-Regex is used to extract the quantity:
+Regular expressions are used to extract the numeric quantity. Tax values are converted to numeric types, review counts are converted to integers, and missing descriptions are handled before NLP processing.
 
-22
-Other Fields
+🧠 NLP Book Recommender
 
-Tax values are converted to numeric values and review counts are converted to integers so they can be used directly for analysis.
+The second notebook implements a content-based recommendation system that identifies books with similar textual content.
+
+1. Text Feature Engineering
+
+The title, category, and description are combined into a single text field:
+
+df["combined_text"] = (
+    df["title"].fillna("") + " " +
+    df["category"].fillna("") + " " +
+    df["description"].fillna("")
+)
+
+An experimental version also repeats the category field to give genre information more influence during vectorization.
+
+2. TF-IDF Vectorization
+
+Scikit-learn's TfidfVectorizer converts the combined text into numerical features while removing common English stop words.
+
+tfidf = TfidfVectorizer(stop_words="english")
+tfidf_matrix = tfidf.fit_transform(df["combined_text"])
+
+The initial 60-book dataset produced a TF-IDF matrix of 60 × 3,349, representing 60 books and 3,349 text features.
+
+3. Cosine Similarity
+
+Cosine similarity is used to compare each book's TF-IDF vector with every other book.
+
+similarity_matrix = cosine_similarity(tfidf_matrix)
+
+The resulting similarity matrix has a shape of 60 × 60.
+
+4. Recommendation Function
+
+A reusable function accepts a book title and returns the top-N most similar books, excluding the selected book itself.
+
+recommend_books(
+    "Sapiens: A Brief History of Humankind",
+    df,
+    similarity_matrix
+)
+
+The output includes the recommended title, category, and similarity score.
+
+Example Results
+
+For A Light in the Attic, the initial model recommended several poetry books, including You can't bury them all: Poems, Shakespeare's Sonnets, and Slow States of Collapse: Poems.
+
+For Sapiens: A Brief History of Humankind, the strongest initial recommendation was Unbound: How Eight Technologies Made Us Human, with a cosine similarity of approximately 0.1096.
+
+These examples demonstrate that the model can identify relevant textual relationships, although the small and diverse dataset limits recommendation quality.
 
 📁 Project Structure
 web-scraping-data-mining/
-│
-├── notebooks/
-│   └── books_to_scrape.ipynb
-│
-├── data/
-│   ├── books_scraped_basic.csv
-│   ├── books_scraped_basic.xlsx
-│   ├── books_scraped_detailed.csv
-│   └── books_scraped_detailed.xlsx
-│
-├── README.md
-├── requirements.txt
-└── .gitignore
+├── 01_books_web_scraping.ipynb
+├── 02_book_nlp_recommender.ipynb
+├── books_scraped_detailed_v2.csv
+├── books_scraped_detailed_v2.xlsx
+└── README.md
+
+The filenames above represent the current project structure. Additional folders may be introduced as the project grows.
+
+🚀 How to Run
+Install Dependencies
+pip install requests beautifulsoup4 pandas openpyxl scikit-learn
+Run the Scraping Notebook
+
+Open 01_books_web_scraping.ipynb in Jupyter Notebook and execute the cells to collect and export the book dataset.
+
+Run the NLP Notebook
+
+Open 02_book_nlp_recommender.ipynb, load the exported CSV, and execute the preprocessing, TF-IDF, cosine similarity, and recommendation cells.
+
+The NLP notebook uses the saved dataset, so the website does not need to be scraped again every time the recommender is tested.
+
 ✅ Current Progress
 
-Send HTTP requests with Python
+Send HTTP requests and parse HTML
 
-Parse HTML with BeautifulSoup
+Extract catalogue-level book information
 
-Extract product information
-
-Handle multiple catalogue pages
-
-Clean price data
-
-Convert ratings to numerical values
-
-Build Pandas DataFrames
-
-Export data to CSV and Excel
+Implement pagination
 
 Extract individual product URLs
 
-Scrape individual product pages
+Scrape product-level details and descriptions
 
-Extract categories and UPCs
+Clean prices, ratings, tax, reviews, and quantities
 
-Extract tax and review information
+Export structured data to CSV and Excel
 
-Extract inventory quantities
+Build a 60-book NLP-ready dataset
+
+Combine title, category, and description text
+
+Implement TF-IDF vectorization
+
+Calculate cosine similarity
+
+Build a reusable top-N recommendation function
+
+Test recommendations using different book titles
 
 🚧 Next Steps
 
-Scale scraper to all 1,000 books
+Scale the scraper to all 1,000 books
 
-Add HTTP status checking
+Refactor scraping logic into reusable functions
 
-Add timeout and exception handling
+Add robust timeout, retry, and exception handling
 
-Add request delays
+Add request delays and progress tracking
 
-Add progress tracking
+Validate missing values, duplicates, and data types
 
-Validate missing values and duplicates
+Compare recommendation results before and after scaling
 
-Perform exploratory data analysis
+Experiment with category weighting and TF-IDF parameters
 
-Create data visualizations
+Evaluate recommendation relevance using manual or category-based metrics
 
-Store scraped data in SQL
+Explore semantic embeddings as an alternative to TF-IDF
 
-Refactor scraper into reusable functions
+Develop a simple Streamlit recommendation interface
+
+Store structured data in SQL for further analysis
 
 💡 Skills Demonstrated
 
-This project demonstrates practical experience in:
+This project demonstrates practical experience in web scraping, HTML parsing, pagination, nested page extraction, Python data structures, regular expressions, data cleaning, ETL, Pandas, NLP feature engineering, TF-IDF, cosine similarity, and content-based recommendation systems.
 
-Web scraping
-HTML parsing
-Pagination
-Nested page extraction
-Python loops and data structures
-Regular expressions
-Data cleaning
-Data type conversion
-Pandas
-CSV and Excel output
-Basic ETL pipeline development
+It also demonstrates an iterative development process: starting with a small sample, validating the output, building a baseline model, and planning improvements based on observed limitations.
+
 ⚠️ Responsible Web Scraping
 
 Books to Scrape is a sandbox website specifically designed for web scraping practice.
 
-For real-world projects, automated data collection should consider website terms of service, robots.txt rules, API availability, rate limits, copyright, privacy, and applicable laws.
+For real-world projects, automated data collection should consider website terms of service, robots.txt rules, API availability, rate limits, copyright, privacy, and applicable laws. Official APIs or permitted data exports should be used where appropriate.
 
-Official APIs or permitted data exports should be used where appropriate.
+🌍 Future Direction
 
-🚀 Future Direction
+The longer-term goal is to apply these data collection and analytics techniques to logistics, supply chain, and market intelligence use cases.
 
-The techniques developed in this project can eventually be applied to more complex data collection and analytics use cases, particularly in logistics and supply chain analytics.
-
-Potential applications include:
-
-Shipping schedule analysis
-Transit-time comparison
-Vessel and voyage data
-Trade-flow analysis
-Freight market intelligence
-Supply-chain performance monitoring
-
-The longer-term goal is to develop end-to-end pipelines:
+Potential applications include shipping schedule analysis, transit-time comparison, vessel and voyage data, trade-flow analysis, freight market intelligence, and supply-chain performance monitoring.
 
 Web / API Data
-      ↓
+       ↓
 Data Collection
-      ↓
+       ↓
 Cleaning & Transformation
-      ↓
+       ↓
 SQL / Database
-      ↓
-Analytics
-      ↓
+       ↓
+Analytics & Machine Learning
+       ↓
 Visualization
-      ↓
+       ↓
 Business Insights
+
+The book recommender serves as a learning project for building reliable data pipelines and applying analytical methods to unstructured text.
